@@ -1,0 +1,14 @@
+# CMake build directories and generated files
+build/
+build-*/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+compile_commands.json
+
+# Python caches
+__pycache__/
+*.py[cod]
+
+# macOS metadata
+.DS_Store

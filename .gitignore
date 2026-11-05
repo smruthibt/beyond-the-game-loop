@@ -1,0 +1,5 @@
+# Original source archives; extracted projects live alongside them.
+/milestone*.zip
+
+# macOS metadata
+.DS_Store
