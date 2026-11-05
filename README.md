@@ -61,7 +61,7 @@ A time-trial platformer for up to four racers. Hit three checkpoints in order, d
 
 I built the race on the engine's component model with nine game-specific components, and kept one shared simulation for solo, client-server, and peer-to-peer play. In peer-to-peer mode, an event log settles contested moments, such as two runners claiming the same potion, identically on every screen.
 
-### Towerfall · Moonlit Trials · [Milestone 1](milestone1/README.md)
+### Towerfall · Moonlit Trials · [Milestone 2](milestone2/README.md)
 
 Arena archery for two to four players. Wall-jump between ledges, make every arrow count, and be the last archer standing to claim the diamond.
 
@@ -69,7 +69,7 @@ Arena archery for two to four players. Wall-jump between ledges, make every arro
 
 Matches run in any of the three network models. Inputs carry timestamps and feed a shared event journal, so matches can be replayed and the peers can verify the round result together. You can pause or switch between 0.5×, 1× and 2× speed while playing, and a telemetry overlay shows the engine at work.
 
-### Neon Grove Escape · [Milestone 2](milestone2/README.md)
+### Neon Grove Escape · [Milestone 1](milestone1/README.md)
 
 A solo scrolling platformer through a glowing forest of fungal ruins. Collect six runes to unlock the Moon Gate, with checkpoints and ten lives to get you there.
 
@@ -93,8 +93,8 @@ cmake --build build --parallel
 
 | Folder | Build directory | Run |
 | --- | --- | --- |
-| `milestone1/` | `build-towerfall` | `./build-towerfall/game/towerfall` |
-| `milestone2/` | `build` | `./build/neon_grave_escape` |
+| `milestone1/` | `build` | `./build/neon_grave_escape` |
+| `milestone2/` | `build-towerfall` | `./build-towerfall/game/towerfall` |
 | `milestone3/` | `build` | `./build/clockwork_dash` |
 
 <details>
@@ -103,13 +103,13 @@ cmake --build build --parallel
 | Requirement | Milestone 1 | Milestone 2 | Milestone 3 |
 | --- | --- | --- | --- |
 | C++17 compiler | ✓ | ✓ | ✓ |
-| CMake | 3.16+ | 3.10+ | 3.16+ |
+| CMake | 3.10+ | 3.16+ | 3.16+ |
 | SDL3 and SDL3_image | ✓ | ✓ | ✓ |
-| libzmq, cppzmq, and pkg-config | ✓ | — | ✓ |
-| Python 3 | Launcher and multiplayer tests | — | Benchmark scripts |
+| libzmq, cppzmq, and pkg-config | — | ✓ | ✓ |
+| Python 3 | — | Launcher and multiplayer tests | Benchmark scripts |
 | matplotlib | — | — | Benchmark charts |
 
-Milestone 1's Python tools expect the `build-towerfall` directory. Other platforms are untested; the [engine guide](milestone3/engine/README.md#build) lists Linux package names.
+Milestone 2's Python tools expect the `build-towerfall` directory. Other platforms are untested; the [engine guide](milestone3/engine/README.md#build) lists Linux package names.
 
 </details>
 

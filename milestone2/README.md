@@ -1,85 +1,118 @@
-# Neon Grove Escape
+# Towerfall · Moonlit Trials
 
-**Milestone 2 · Solo platformer · C++17 / SDL3**
+**Milestone 2 · Arena archery · C++17 / SDL3 / ZeroMQ**
 
-Find six runes, survive a glowing forest of fungal ruins, and escape through the Moon Gate. Neon Grove Escape is a scrolling platformer built on the Team 16 engine, with checkpoints, patrolling enemies, disappearing platforms, and a limited supply of lives.
+Outlast the other archers, then claim the diamond on a moving platform. Towerfall combines platforming and limited-ammunition combat with solo practice and three multiplayer networking modes, built on the Team 16 engine.
 
 ## Highlights
 
-- **A scrolling course:** traverse a 6,000-unit-wide world with platforms, hazards, and a following camera.
-- **Six runes, one exit:** collect every rune to unlock the Moon Gate.
-- **Three checkpoints:** key rune pickups advance your respawn position.
-- **Ten lives:** recover from a death with a countdown, or restart for a better run.
-- **Reactive movement:** acceleration, air control, buffered jumps, and enemy stomps.
-- **Procedural visuals:** glowing scenery, fireflies, and particle trails drawn in code.
-- **Scaling demonstration:** switch between pixel and proportional rendering while playing.
+- **Two to four archers:** practice against AI or launch a local multiplayer session.
+- **Platforming combat:** jump between ledges, wall-jump, fire arrows, and recover ammunition.
+- **Three network models:** client-server, hybrid, and serverless peer-to-peer.
+- **Time controls:** pause or switch between 0.5×, 1×, and 2× speed, with a telemetry overlay for observing the engine.
+- **Replayable simulation:** timestamped commands, a shared event journal, and round-result verification.
+- **Automation:** a session launcher, gameplay tests, and multiplayer checks using real processes.
 
 ## Build and play
 
-Run these commands from this milestone folder. You need a C++17 compiler, CMake 3.10+, SDL3, and SDL3_image.
+Run these commands from this milestone folder. You need a C++17 compiler, CMake 3.16+, SDL3, SDL3_image, libzmq, cppzmq, and pkg-config. Python 3 is needed for the launcher and multiplayer tests.
 
 On macOS with Homebrew:
 
 ```sh
-brew install cmake sdl3 sdl3_image
+brew install cmake sdl3 sdl3_image zeromq cppzmq pkg-config
 ```
 
-Build and launch:
+Build and start solo practice:
 
 ```sh
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build
-./build/neon_grave_escape
+cmake -S . -B build-towerfall -DCMAKE_BUILD_TYPE=Release
+cmake --build build-towerfall --parallel
+./build-towerfall/game/towerfall
 ```
 
-**Naming note:** the game displays **Neon Grove Escape**, while its source directory and executable retain the name `neon_grave_escape`.
+The `build-towerfall` directory matches the default path used by the Python tools. Solo mode fills the remaining archer slots with AI.
 
 ## How to play
 
-Move right through the course, collect all six runes, and reach the Moon Gate. The gate remains locked until your collection is complete. Rune pickups also activate three checkpoints along the route.
-
-Avoid hazards and enemies, time your jumps across disappearing platforms, and land on enemies from above to stomp them. After losing a life, press **Space** to begin the three-second respawn countdown. Losing all ten lives ends the run.
+Eliminate your opponents and collect the diamond to win. Only the last surviving archer can claim it; surviving alone is not enough. Watch your ammunition and use the arena's moving platforms to reach the prize.
 
 | Key | Action |
 | --- | --- |
-| A / D or Left / Right | Move |
-| Space | Jump |
-| Space after a death | Continue from the latest checkpoint |
-| Space after game over | Start a new run |
-| R | Restart the run at any time |
-| T | Toggle pixel / proportional scaling |
-| Esc | Quit |
+| Left / Right | Move and face the bow |
+| Space | Jump; wall-jump beside a wall |
+| Enter | Shoot |
+| Up / Down | Adjust bow aim during play |
+| Up | Ready in the multiplayer lobby |
+| Up + Down | Open options |
+| R | Restart solo practice |
+| H | Toggle help |
+| Tab | Toggle telemetry |
+| P | Pause or resume game time |
+| Shift + 1 / 2 / 3 | Set speed to 0.5× / 1× / 2× |
+| F11 | Toggle fullscreen |
+| Esc | Open the quit prompt or close a menu |
 
-The HUD shows your run time, remaining lives, rune count, gate status, checkpoint, and scaling mode. If the default 1920×1080 view is clipped on a smaller display, try proportional scaling with **T**.
+In solo practice, time controls affect the arena. In networked play, they affect the local archer's personal timeline.
 
-## Built-in checks
+## Local multiplayer
 
-The executable includes gameplay verification and a short rendering smoke test:
+The launcher starts the required processes and opens one window per player. Click a window to control that archer. These sessions run on one computer.
+
+| Mode | How it works |
+| --- | --- |
+| `client` | A dedicated server manages the shared match |
+| `hybrid` | A server resolves shared combat while peers exchange live player positions |
+| `peer` | Peers exchange events and agree on results without a dedicated server |
+
+Start three archers, with two controlled by AI:
 
 ```sh
-./build/neon_grave_escape --logic-test
-./build/neon_grave_escape --smoke-test
+python3 game/tools/launch.py --mode client --players 3 --bots 2
 ```
 
-The logic checks exercise gameplay behavior such as enemy movement, checkpoints, rune collection, and camera scrolling. The smoke test runs for three update frames and exits. Both initialize SDL and a window; this project does not register a separate CTest suite.
+Try the other modes:
 
-For frame captures and scaling comparisons:
+```sh
+python3 game/tools/launch.py --mode hybrid --players 3 --bots 2
+python3 game/tools/launch.py --mode peer --players 3 --bots 2
+```
 
-| Command | Output |
-| --- | --- |
-| `./build/neon_grave_escape --capture-frame` | `/tmp/neon_grove_escape.bmp` |
-| `./build/neon_grave_escape --capture-pixel-resized` | `/tmp/neon_grove_escape_pixel_resized.bmp` |
-| `./build/neon_grave_escape --capture-proportional` | `/tmp/neon_grove_escape_proportional.bmp` |
+Run one session at a time. In peer mode, press **Up** in each human player's window to ready up. Press **Ctrl+C** in the launcher's terminal to close the session.
 
-The resized captures use a 1024×576 window.
+Use `--port 20000` if the default base port, `19400`, is occupied. Add `--demo` to demonstrate different player timeline speeds, or `--log` to print network traffic. For the executable's full options:
+
+```sh
+./build-towerfall/game/towerfall --help
+```
+
+## Tests
+
+Run the C++ gameplay and simulation tests:
+
+```sh
+(cd build-towerfall && ctest --output-on-failure)
+```
+
+Run the multiplayer timing and combat scenarios across all three network modes:
+
+```sh
+python3 game/tests/multiplayer.py --mode all --output /tmp/towerfall-network
+python3 game/tests/multiplayer.py --mode all --combat --output /tmp/towerfall-network
+```
+
+The Python checks use only the standard library. They launch local ZeroMQ processes and write logs and JSONL telemetry to the output directory. Use `--mode client`, `--mode hybrid`, or `--mode peer` to check one mode.
 
 ## Inside the project
 
 | Path | Purpose |
 | --- | --- |
-| [CMakeLists.txt](CMakeLists.txt) | Builds the engine library and game executable |
-| [engine/include/engine/](engine/include/engine/) | Engine interfaces for entities, input, physics, collision, and scaling |
-| [engine/src/](engine/src/) | Engine implementation and SDL application loop |
-| [game/neon_grave_escape/main.cpp](game/neon_grave_escape/main.cpp) | Course layout, gameplay, procedural rendering, and built-in checks |
+| [include/engine/](include/engine/) | Public engine interfaces |
+| [src/](src/) | Rendering loop, input, physics, collision, timelines, jobs, and networking |
+| [game/src/Simulation.cpp](game/src/Simulation.cpp) | Arena movement, arrows, collisions, and simulation replay |
+| [game/src/Match.cpp](game/src/Match.cpp) | Match phases and result agreement |
+| [game/src/Transport.cpp](game/src/Transport.cpp) | Multiplayer transport and synchronization |
+| [game/src/Presentation.cpp](game/src/Presentation.cpp) | Rendering and audio |
+| [game/tests/](game/tests/) | Rules tests and multiplayer scenarios |
 
-The game uses the engine for its application loop, entities, input, physics, collision, and world-to-screen scaling. Course rules and presentation live in the game source, keeping the engine reusable.
+The engine builds as a reusable static library. Set `-DBUILD_TOWERFALL=OFF` when configuring CMake to build only the engine.
